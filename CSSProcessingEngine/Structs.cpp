@@ -79,7 +79,7 @@ void printAttributes(struct Attribute* head)
 
 	while (current != NULL)
 	{
-		printf("%s:%s -> ", current->attributeName, current->attributeValue);
+		printf("<%s:%s> -> ", current->attributeName, current->attributeValue);
 		current = current->next;
 	}
 
@@ -93,7 +93,7 @@ void printSelectors(struct Selector* head)
 
 	while (current != NULL)
 	{
-		printf("%s ->", current->selectorName);
+		printf("<%s> ->", current->selectorName);
 		current = current->next;
 	}
 

@@ -43,4 +43,5 @@ void addSelector(struct SectionCSS* css, char* selectorName, int selectorLen);
 void addAttribute(struct SectionCSS* css, char* attr, int attrLen, char* value, int valueLen);
 void printList(struct Element* head);
 void addToList(struct ListOfElements* headAndTail, struct SectionCSS css);
+void printOneSection(struct SectionCSS css);
 struct Element* freeListMemory(struct Element* head); //zwolnij również inne listy: atrybuty, selektory, chary
