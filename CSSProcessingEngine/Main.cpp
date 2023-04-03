@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <stdio.h>
 #include <stdlib.h>
+#include "Commands.h"
+
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -197,25 +199,35 @@ void processSemiColon(struct StatusOfReading* state)
 }
 
 
-void processRBrace(struct StatusOfReading* state)
+void processRBrace(struct StatusOfReading* state, struct ListOfElements* headAndTail)
 {
 	if (state->status == READINGATTRVALUE)
 	{
 		printf("Koniec wartosci atrybutu i zaczynamy nazwe selektora ");
+
 		state->attrValue[state->attrLen] = '\0';
 		state->attrLen++;
+
 		int nOfRemoved = removeEndWhiteChar(state->attrValue, state->attrLen);
 		state->attrLen -= nOfRemoved;
+
 		addAttribute(&(state->currentBuildCSS), state->charTable, state->charLenght, state->attrValue, state->attrLen);
+
 		state->status = READINGATTRNAME;
+
 		state->charLenght = 0;
 	}
 
 	if (state->status == READINGATTRNAME && state->charLenght == 0)
 	{
 		printf("Current CSS juz sie zbudowal i prawa klamra go zakonczyla \n ");
+		addToList(headAndTail, state->currentBuildCSS);
 		printOneSection(state->currentBuildCSS);
+
 		state->status = READINGSELECTORS;
+
+		state->currentBuildCSS.headSelector = NULL;
+		state->currentBuildCSS.headAttribute = NULL;
 	}
 
 	else
@@ -286,7 +298,7 @@ void processLetters(struct StatusOfReading* state, char letter)
 }
 
 
-void recognizeChar(char readChar, struct StatusOfReading* state)
+void recognizeChar(char readChar, struct StatusOfReading* state, struct ListOfElements* headAndTail)
 {
 	if (readChar == ',')
 	{
@@ -315,7 +327,7 @@ void recognizeChar(char readChar, struct StatusOfReading* state)
 	else if (readChar == '}')
 	{
 		printf("Rozpoznany RBRACE }");
-		processRBrace(state);
+		processRBrace(state, headAndTail);
 	}
 	
 
@@ -331,7 +343,7 @@ void recognizeChar(char readChar, struct StatusOfReading* state)
 }
 
 
-void readCSS(struct StatusOfReading* state)
+void readCSS(struct StatusOfReading* state, struct ListOfElements* headAndTail)
 {
 	char readChar;
 	int counter;
@@ -351,8 +363,7 @@ void readCSS(struct StatusOfReading* state)
 		}
 
 
-
-		recognizeChar(readChar, state);
+		recognizeChar(readChar, state, headAndTail);
 		counter = scanf("%c", &readChar);
 	}
 
@@ -371,14 +382,26 @@ int main()
 	state.currentBuildCSS.headAttribute = NULL;
 	state.currentBuildCSS.headSelector = NULL;
 
-	readCSS(&state);
-
-	/*
 	ListOfElements headAndTail;
 	headAndTail.head = NULL;
 	headAndTail.tail = NULL;
-	
 
+	readCSS(&state, &headAndTail);
+
+	nOfCSSSections(headAndTail);
+	nOfSelectorInSectionIth(headAndTail, 3);
+	nOfAttrInSectionIth(headAndTail, 2);
+	jthSelectorInIthSection(headAndTail, 2, 20);
+
+	char t0[6] = { 'c', 'o', 'l', 'o', 'r', '\0'};
+	valOfAttrInIthSection(headAndTail, 2, t0);
+
+	char t1[6] = { 'w', 'i', 'd', 't', 'h', '\0'};
+	nOfOccurancesOfAttrNameInAllSectionCSS(headAndTail, t0);
+
+	printList(headAndTail.head);
+
+	/*
 	char t0[4] = { 'a', 'b', 'c', '\0' };
 	char v0[3] = { 'x', 'y', '\0' };
 
@@ -407,10 +430,11 @@ int main()
 	printList(headAndTail.head);
 	addToList(&headAndTail, css2);
 	printList(headAndTail.head);
+	*/
+
 
 	headAndTail.head = freeListMemory(headAndTail.head);
 	headAndTail.tail = NULL;
-	*/
 
 	return 0;
 }
