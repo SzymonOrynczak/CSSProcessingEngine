@@ -8,16 +8,30 @@ void addSelector(struct SectionCSS* css, char* selectorName, int selectorLen)
 	struct Selector* newSelector = (struct Selector*)malloc(sizeof(struct Selector));
 	newSelector->selectorName = (char*)malloc(selectorLen * sizeof(char));
 
+	newSelector->next = NULL;
+
 	for (int i = 0; i < selectorLen; i++)
 	{
 		newSelector->selectorName[i] = selectorName[i];
 	}
 
-	newSelector->next = css->headSelector;
-	css->headSelector = newSelector;
+	if (css->headSelector == NULL)
+	{
+		css->headSelector = newSelector;
+		return;
+	}
+
+	struct Selector* oldLast = css->headSelector;
+
+	while (oldLast->next != NULL)
+	{
+		oldLast = oldLast->next;
+	}
+
+	oldLast->next = newSelector;
 }
 
-
+//TODO: zrobic dodawanie na koniec
 void addAttribute(struct SectionCSS* css, char* attr, int attrLen, char* value, int valueLen)
 {
 	struct Attribute* newAttr = (struct Attribute*)malloc(sizeof(struct Attribute));

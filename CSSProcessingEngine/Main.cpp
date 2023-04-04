@@ -397,9 +397,21 @@ int main()
 	valOfAttrInIthSection(headAndTail, 2, t0);
 
 	char t1[6] = { 'w', 'i', 'd', 't', 'h', '\0'};
-	nOfOccurancesOfAttrNameInAllSectionCSS(headAndTail, t0);
+	nOfOccurancesOfAttrNameInAllSectionCSS(headAndTail, t1);
+
+	char t2[3] = { 'h', '1', '\0' };
+	//nOfSelectorZ(headAndTail, t2);
+	
+	valOfAttrNInSelectorZ(headAndTail, t0, t2);
 
 	printList(headAndTail.head);
+
+	deleteIthSection(&headAndTail, 1);
+
+	removeAttrNameFromIthSection(&headAndTail, 2, t0);
+
+	printList(headAndTail.head);
+
 
 	/*
 	char t0[4] = { 'a', 'b', 'c', '\0' };

@@ -1,5 +1,5 @@
 ﻿#pragma once
-#define BLOCKSIZE 3
+#define BLOCKSIZE 2
 
 struct Attribute
 {
