@@ -375,39 +375,48 @@ void nOfOccurancesOfAttrNameInAllSectionCSS(struct ListOfElements headAndTail, c
 				nameCounter++;
 			}
 		}
-
 		current = current->next;
 	}
+	printf("Ilosc wystapien atrybutu %s we wszystkich sekcjach CSS: %d \n", attrName, nameCounter);
+}
+		
 
-	printf("Ilosc wystapien nazwy %s: %d \n", attrName, nameCounter);
+int ifSelectorNameInBlock(struct SectionCSS section, char* selectorName)
+{
+	struct Selector* selector = section.headSelector;
+
+	while (selector != NULL)
+	{
+		if (strcmp(selectorName, selector->selectorName) == 0)
+		{
+			return 1;
+		}
+
+		selector = selector->next;
+	}
+
+	return 0;
 }
 
 
-	/*TODO: Liczy prawidłowo dla pierwszej sekcji CSS, jest problem z przejściem do nastepnej sekcji - currentAttr wykrywa NULL na
-	* końcu sekcji i nie czyta atrybutów kolejnej sekcji.
-	* 
-	* - nOfOccurancesOfAttrNameInAllSectionCSS - naprawić
-	* - zrobić obsługę delete
-	* - zrobić wszystko oprócz z usuwaniem
-	*/		
-
-
-// prawie tak samo jak ta wyżej
 void nOfSelectorZ(struct ListOfElements headAndTail, char* selectorName)
 {
 	struct Element* current = headAndTail.head;
-	int nameCounter = 0;
+	int selectorCounter = 0;
 
 	while (current != NULL)
 	{
-		if (strcmp(selectorName, current->sectionTab->headSelector->selectorName) == 0)
+		for (int i = 0; i < current->nOfOccpied; i++)
 		{
-			nameCounter++;
+			struct SectionCSS section = current->sectionTab[i];
+			if (ifSelectorNameInBlock(section, selectorName))
+			{
+				selectorCounter++;
+			}
 		}
 		current = current->next;
 	}
-
-	printf("Selektor o nazwie %s wystapil %d razy \n", selectorName, nameCounter);
+	printf("Ilosc wystapien selektora %s: %d \n", selectorName, selectorCounter);
 }
 
 

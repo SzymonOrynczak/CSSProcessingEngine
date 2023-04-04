@@ -400,11 +400,9 @@ int main()
 	nOfOccurancesOfAttrNameInAllSectionCSS(headAndTail, t1);
 
 	char t2[3] = { 'h', '1', '\0' };
-	//nOfSelectorZ(headAndTail, t2);
+	nOfSelectorZ(headAndTail, t1);
 	
 	valOfAttrNInSelectorZ(headAndTail, t0, t2);
-
-	printList(headAndTail.head);
 
 	deleteIthSection(&headAndTail, 1);
 
