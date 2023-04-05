@@ -61,7 +61,7 @@ void removeAttrFromSection(struct SectionCSS* section, char* attrName)
 
 		else
 		{
-			prevAttr = attrToRemove->next;
+			prevAttr->next = attrToRemove->next;
 		}
 		free(attrToRemove);
 	}
@@ -71,11 +71,14 @@ void removeAttrFromSection(struct SectionCSS* section, char* attrName)
 void removeAttrNameFromIthSection(struct ListOfElements* headAndTail, int ith, char* attrName)
 {
 	struct SectionCSS* section = findIthSection(*headAndTail, ith);
+
+	if (section == NULL) { return; }
+
 	removeAttrFromSection(section, attrName);
 
 	if (section->headAttribute == NULL)
 	{
-		deleteIthSection(headAndTail, ith);
+		removeIthSection(headAndTail, ith);
 	}
 }
 
@@ -102,7 +105,7 @@ void removeListsFromSection(struct SectionCSS* sectionToRemove)
 }
 
 
-void deleteIthSection(struct ListOfElements* headAndTail, int ith)
+void removeIthSection(struct ListOfElements* headAndTail, int ith)
 {
 	struct Element* current = headAndTail->head;
 	int counter = current->nOfOccpied;
@@ -476,3 +479,6 @@ void valOfAttrNInSelectorZ(struct ListOfElements headAndTail, char* attrN, char*
 		current = current->prev;
 	}
 }
+
+
+
