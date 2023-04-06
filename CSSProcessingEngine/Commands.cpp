@@ -24,7 +24,6 @@ struct SectionCSS* findIthSection(struct ListOfElements headAndTail, int ith)
 
 	if (current == NULL)
 	{
-		printf("Skip - brak sekcji css o numerze %d \n", ith);
 		return NULL;
 	}
 
@@ -35,7 +34,7 @@ struct SectionCSS* findIthSection(struct ListOfElements headAndTail, int ith)
 }
 
 
-void removeAttrFromSection(struct SectionCSS* section, char* attrName)
+void removeAttrFromSection(struct SectionCSS* section, char* attrName, int ith)
 {
 	struct Attribute* attrToRemove = section->headAttribute;
 	struct Attribute* prevAttr = NULL;
@@ -48,14 +47,13 @@ void removeAttrFromSection(struct SectionCSS* section, char* attrName)
 
 	if (attrToRemove == NULL)
 	{
-		printf("Skip - brak atrybutu o nazwie %s", attrName);
+		return;
 	}
 
 	else
 	{
 		if (prevAttr == NULL)
 		{
-			//usuwamy glowe
 			section->headAttribute = section->headAttribute->next;
 		}
 
@@ -64,21 +62,24 @@ void removeAttrFromSection(struct SectionCSS* section, char* attrName)
 			prevAttr->next = attrToRemove->next;
 		}
 		free(attrToRemove);
+
+		printf("%d,D,%s == deleted\n", ith, attrName);
 	}
 }
 
 
-void removeAttrNameFromIthSection(struct ListOfElements* headAndTail, int ith, char* attrName)
+void removeAttrNameFromIthSection(struct ListOfElements* headAndTail, int ith, char* attrName, int ifPrint)
 {
 	struct SectionCSS* section = findIthSection(*headAndTail, ith);
 
 	if (section == NULL) { return; }
 
-	removeAttrFromSection(section, attrName);
+	removeAttrFromSection(section, attrName, ith);
+	
 
 	if (section->headAttribute == NULL)
 	{
-		removeIthSection(headAndTail, ith);
+		removeIthSection(headAndTail, ith, ifPrint);
 	}
 }
 
@@ -105,7 +106,7 @@ void removeListsFromSection(struct SectionCSS* sectionToRemove)
 }
 
 
-void removeIthSection(struct ListOfElements* headAndTail, int ith)
+void removeIthSection(struct ListOfElements* headAndTail, int ith, int ifPrint)
 {
 	struct Element* current = headAndTail->head;
 	int counter = current->nOfOccpied;
@@ -122,7 +123,6 @@ void removeIthSection(struct ListOfElements* headAndTail, int ith)
 
 	if (current == NULL)
 	{
-		printf("Skip - brak sekcji css o numerze %d \n", ith);
 		return;
 	}
 
@@ -131,9 +131,9 @@ void removeIthSection(struct ListOfElements* headAndTail, int ith)
 
 	struct SectionCSS sectionToRemove = current->sectionTab[desiredIndex];
 
-	removeListsFromSection(&sectionToRemove);
+	removeListsFromSection(&sectionToRemove, ith);
 
-	//z bloku current usuwamy desiredNumber
+	//removing desireNumber from block
 
 	for (int i = desiredIndex + 1; i < current->nOfOccpied; i++)
 	{
@@ -144,7 +144,7 @@ void removeIthSection(struct ListOfElements* headAndTail, int ith)
 
 	if (current->nOfOccpied == 0)
 	{
-		//znika blok current
+		//current disapears
 		struct Element* currP = current->prev;
 		struct Element* currN = current->next;
 
@@ -156,7 +156,7 @@ void removeIthSection(struct ListOfElements* headAndTail, int ith)
 
 		else if (currP == NULL && currN != NULL)
 		{
-			//current jest glowa
+			//current is head
 
 			currN->prev = NULL;
 			headAndTail->head = currN;
@@ -164,7 +164,7 @@ void removeIthSection(struct ListOfElements* headAndTail, int ith)
 
 		else if (currP != NULL && currN == NULL)
 		{
-			//current to tail
+			//current is tail
 
 			currP->next = NULL;
 			headAndTail->tail = currP;
@@ -172,12 +172,16 @@ void removeIthSection(struct ListOfElements* headAndTail, int ith)
 
 		else
 		{
-			//current jest jedyny na liscie
+			//current is the only one on list
 			headAndTail->head = NULL;
 			headAndTail->tail = NULL;
 		}
+		free(current);		
+	}
 
-		free(current);
+	if (ifPrint)
+	{
+		printf("%d,D,* == deleted\n", ith);
 	}
 }
 
@@ -193,7 +197,6 @@ int nOfCSSSections(struct ListOfElements headAndTail)
 		current = current->next; 
 	}
 	
-	printf("Ilosc css wynosi: %d \n", counter);
 	return counter;
 }
 
@@ -213,7 +216,7 @@ int nOfSelectorList(struct Selector* head)
 }
 
 
-void nOfSelectorInSectionIth(struct ListOfElements headAndTail, int ith)
+void nOfSelectorInSectionIth(struct ListOfElements headAndTail, int ith, char* command)
 {
 	struct Element* current = headAndTail.head;
 	int counter = current->nOfOccpied;
@@ -230,7 +233,7 @@ void nOfSelectorInSectionIth(struct ListOfElements headAndTail, int ith)
 
 	if (current == NULL)
 	{
-		printf("Skip - brak sekcji css o numerze %d \n", ith);
+		return;
 	}
 
 	else
@@ -238,7 +241,7 @@ void nOfSelectorInSectionIth(struct ListOfElements headAndTail, int ith)
 		int desiredNumber = counter - ith;
 		int desiredIndex = current->nOfOccpied - desiredNumber - 1;
 		int nOfSelectors = nOfSelectorList(current->sectionTab[desiredIndex].headSelector);
-		printf("Liczba selectorow w %d sekcji css: %d \n", ith, nOfSelectors);
+		printf("%s == %d\n", command, nOfSelectors);
 	}
 }
 
@@ -258,7 +261,7 @@ int nOfAttrList(struct Attribute* head)
 }
 
 
-void nOfAttrInSectionIth(struct ListOfElements headAndTail, int ith)
+void nOfAttrInSectionIth(struct ListOfElements headAndTail, int ith, char* command)
 {
 	struct Element* current = headAndTail.head;
 	int counter = current->nOfOccpied;
@@ -275,7 +278,7 @@ void nOfAttrInSectionIth(struct ListOfElements headAndTail, int ith)
 
 	if (current == NULL)
 	{
-		printf("Skip - brak sekcji css o numerze %d \n", ith);
+		return;
 	}
 
 	else
@@ -283,7 +286,7 @@ void nOfAttrInSectionIth(struct ListOfElements headAndTail, int ith)
 		int desiredNumber = counter - ith;
 		int desiredIndex = current->nOfOccpied - desiredNumber - 1;
 		int nOfAttr = nOfAttrList(current->sectionTab[desiredIndex].headAttribute);
-		printf("Liczba atrybutow w %d sekcji css: %d \n", ith, nOfAttr);
+		printf("%s == %d\n", command, nOfAttr);
 	}
 }
 
@@ -307,12 +310,12 @@ void jthSelectorInIthSection(ListOfElements headAndTail, int ith, int jth)
 
 	if (current == NULL)
 	{
-		printf("Skip - brak selektora %d \n", jth);
+
 	}
 
 	else
 	{
-		printf("Selektor: %s \n", current->selectorName);
+		printf("%d,S,%d == %s\n",ith ,jth ,current->selectorName);
 	}
 }
 
@@ -335,12 +338,12 @@ void valOfAttrInIthSection(ListOfElements headAndTail, int ith, char* attrName)
 
 	if (current == NULL)
 	{
-		printf("Skip - brak nazwy atrybutu %s \n", attrName);
+		return;
 	}
 
 	else
 	{
-		printf("Atrybut o nazwie %s ma wartosc: %s \n", current->attributeName, current->attributeValue);
+		printf("%d,A,%s == %s\n", ith, current->attributeName, current->attributeValue);
 	}
 }
 
@@ -380,7 +383,7 @@ void nOfOccurancesOfAttrNameInAllSectionCSS(struct ListOfElements headAndTail, c
 		}
 		current = current->next;
 	}
-	printf("Ilosc wystapien atrybutu %s we wszystkich sekcjach CSS: %d \n", attrName, nameCounter);
+	printf("%s,A,? == %d\n", attrName, nameCounter);
 }
 		
 
@@ -406,12 +409,22 @@ void nOfSelectorZ(struct ListOfElements headAndTail, char* selectorName)
 {
 	struct Element* current = headAndTail.head;
 	int selectorCounter = 0;
+	int i = 0;
+
+	while (selectorName[i] != '\0')
+	{
+		if (selectorName[i] == ',')
+		{
+			return;
+		}
+		i++;
+	}
 
 	while (current != NULL)
 	{
-		for (int i = 0; i < current->nOfOccpied; i++)
+		for (int j = 0; j < current->nOfOccpied; j++)
 		{
-			struct SectionCSS section = current->sectionTab[i];
+			struct SectionCSS section = current->sectionTab[j];
 			if (ifSelectorNameInBlock(section, selectorName))
 			{
 				selectorCounter++;
@@ -419,7 +432,7 @@ void nOfSelectorZ(struct ListOfElements headAndTail, char* selectorName)
 		}
 		current = current->next;
 	}
-	printf("Ilosc wystapien selektora %s: %d \n", selectorName, selectorCounter);
+	printf("%s,S,? == %d\n", selectorName, selectorCounter);
 }
 
 
@@ -449,13 +462,13 @@ void printValOfAttrName(struct SectionCSS section, char* attrN, char* selectorZ)
 	{
 		if (strcmp(attrN, attr->attributeName) == 0)
 		{
-			printf("Wartosc atrybutu %s z selectora %s: %s\n", attrN, selectorZ, attr->attributeValue);
+			printf("%s,E,%s == %s\n", selectorZ, attrN ,attr->attributeValue);
 			return;
 		}
 		attr = attr->next;
 	}
 
-	printf("Skip - brak atrybutu %s w selektorze %s\n", attrN, selectorZ);
+	return;
 }
 
 

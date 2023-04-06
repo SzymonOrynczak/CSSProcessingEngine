@@ -5,21 +5,9 @@
 #include "Commands.h"
 #include <cstring>
 
-
 #define _CRT_SECURE_NO_WARNINGS
 
-/*Spis elementów rozpoznawanych w pliku
-#define COMA 1 
-#define LBRACE 2
-#define RBRACE 3
-#define COLON 4
-#define SEMICOLON 5
-#define WORDNAME 6
-#define ATTRVALUE 7
-*/
-
-
-/*Statusy w tracie czytania pliku*/
+/*Statuses of file reading*/
 #define READINGSELECTORS 0
 #define READINGATTRNAME 1
 #define READINGATTRVALUE 2
@@ -42,37 +30,6 @@ struct StatusOfReading
 	int questionMarkCounter;
 };
 
-/*
-int specialCharacter(char symbol)
-{
-	if (symbol == '{')
-	{
-		return 1;
-	}
-
-	if (symbol == ',')
-	{
-		return 1;
-	}
-
-	if (symbol == ':')
-	{
-		return 1;
-	}
-
-	if (symbol == ';')
-	{
-		return 1;
-	}
-
-	if (symbol == '}')
-	{
-		return 1;
-	}
-
-	return 0;
-}
-*/
 
 int ifWhiteChar(char letter)
 {
@@ -115,7 +72,6 @@ void processComa(struct StatusOfReading* state)
 {
 	if (state->status == READINGSELECTORS)
 	{
-		printf("Koniec nazwy poprzedniego selektora i rozpoczynamy drugi selektor ");
 		state->charTable[state->charLenght] = '\0';
 		state->charLenght++;
 		int nOfRemoved = removeEndWhiteChar(state->charTable, state->charLenght);
@@ -126,13 +82,8 @@ void processComa(struct StatusOfReading* state)
 
 	else if (state->status == READINGATTRVALUE)
 	{
-		state->charTable[state->charLenght] = ',';
-		state->charLenght++;
-	}
-
-	else
-	{
-		printf("Linia %d znak %d - Błąd: w nazwie atrybutu nie wolno przecinka \n", state->lineCounter, state->charCounter);
+		state->attrValue[state->attrLen] = ',';
+		state->attrLen++;
 	}
 }
 
@@ -141,7 +92,6 @@ void processLBrace(struct StatusOfReading* state)
 {
 	if (state->status == READINGSELECTORS)
 	{
-		printf("Koniec czytania selektora i rozpoczynamy nazwe atrybutu ");
 		state->charTable[state->charLenght] = '\0';
 		state->charLenght++;
 		int nOfRemoved = removeEndWhiteChar(state->charTable, state->charLenght);
@@ -150,11 +100,6 @@ void processLBrace(struct StatusOfReading* state)
 		state->charLenght = 0;
 		state->status = READINGATTRNAME;
 	}
-
-	else
-	{
-		printf("Linia %d znak %d - Błąd: w bloku atrybutów nie wolno { \n", state->lineCounter, state->charCounter);
-	}
 }
 
 
@@ -162,7 +107,6 @@ void processColon(struct StatusOfReading* state)
 {
 	if (state->status == READINGATTRNAME)
 	{
-		printf("Koniec nazwy atrybutu i zaczynamy wartosc atrybutu ");
 		state->charTable[state->charLenght] = '\0';
 		state->charLenght++;
 		int nOfRemoved = removeEndWhiteChar(state->charTable, state->charLenght);
@@ -176,11 +120,6 @@ void processColon(struct StatusOfReading* state)
 		state->charTable[state->charLenght] = ':';
 		state->charLenght++;
 	}
-
-	else
-	{
-		printf("Linia %d znak %d - Błąd: w bloku wartosci atrybutu nie wolno : \n", state->lineCounter, state->charCounter);
-	}
 }
 
 
@@ -188,7 +127,6 @@ void processSemiColon(struct StatusOfReading* state)
 {
 	if (state->status == READINGATTRVALUE)
 	{
-		printf("Koniec wartosci atrybutu i zaczynamy nazwe kolejnego atrybutu ");
 		state->attrValue[state->attrLen] = '\0';
 		state->attrLen++;
 		int nOfRemoved = removeEndWhiteChar(state->attrValue, state->attrLen);
@@ -197,11 +135,6 @@ void processSemiColon(struct StatusOfReading* state)
 		state->status = READINGATTRNAME;
 		state->charLenght = 0;
 	}
-
-	else
-	{
-		printf("Linia %d znak %d - Błąd: w bloku selektora lub nazwy atrybutu nie wolno ; \n", state->lineCounter, state->charCounter);
-	}
 }
 
 
@@ -209,8 +142,6 @@ void processRBrace(struct StatusOfReading* state, struct ListOfElements* headAnd
 {
 	if (state->status == READINGATTRVALUE)
 	{
-		printf("Koniec wartosci atrybutu i zaczynamy nazwe selektora ");
-
 		state->attrValue[state->attrLen] = '\0';
 		state->attrLen++;
 
@@ -226,35 +157,14 @@ void processRBrace(struct StatusOfReading* state, struct ListOfElements* headAnd
 
 	if (state->status == READINGATTRNAME && state->charLenght == 0)
 	{
-		printf("Current CSS juz sie zbudowal i prawa klamra go zakonczyla \n ");
 		addToList(headAndTail, state->currentBuildCSS);
-		printOneSection(state->currentBuildCSS);
-
 		state->status = READINGSELECTORS;
 
 		state->currentBuildCSS.headSelector = NULL;
 		state->currentBuildCSS.headAttribute = NULL;
 	}
-
-	else
-	{
-		printf("Linia %d znak %d - Błąd: w bloku selektora, nazwy atrybutu lub w wartości nie wolno } \n", state->lineCounter, state->charCounter);
-	}
 }
 
-/*
-void endWord(struct StatusOfReading* state)
-{
-	if (state->status == READINGWORDNAME)
-	{
-		state->charTable[state->charLenght] = '\0'; //koniec napisu
-		printf("Koniec elementu WORDNAME %s \n", state->charTable);
-
-		state->status = READINGDEFAULT;
-		state->charLenght = 0;
-	}
-}
-*/
 
 void processWhiteSpace(struct StatusOfReading* state, char letter)
 {
@@ -262,7 +172,7 @@ void processWhiteSpace(struct StatusOfReading* state, char letter)
 	{
 		if (state->attrLen == 0)
 		{
-			printf("Bialy znak zostal wyciety ");
+			
 		}
 
 		else
@@ -276,7 +186,7 @@ void processWhiteSpace(struct StatusOfReading* state, char letter)
 	{
 		if (state->charLenght == 0)
 		{
-			printf("Bialy znak zostal wyciety ");
+
 		}
 
 		else
@@ -469,47 +379,43 @@ void executeCommand(struct StatusOfReading* state, struct ListOfElements* headAn
 
 	if (strcmp(command, "?") == 0)
 	{
-		nOfCSSSections(*headAndTail);
+		int result = nOfCSSSections(*headAndTail);
+		printf("? == %d\n", result);
 	}
 
 	//i,S,? - print the number of selectors for block number i (block and attribute numbers start from 1), if there is no such block, skip;
 	else if (endingWith(command, ",S,?") && ifNumber(command))
 	{
 		int newNumber = createNumber(command);
-		nOfSelectorInSectionIth(*headAndTail, newNumber);
+		nOfSelectorInSectionIth(*headAndTail, newNumber, command);
 	}
 
 	//i,A,? - print the number of attributes for block number i, if there is no such block, skip;
 	else if (endingWith(command, ",A,?") && ifNumber(command))
 	{
 		int newNumber = createNumber(command);
-		nOfAttrInSectionIth(*headAndTail, newNumber);
+		nOfAttrInSectionIth(*headAndTail, newNumber, command);
 	}
 
 	//n, A, ? -print the total(for all blocks) number of occurrences of attribute named n(duplicates should be removed when reading).It can be 0;
 	else if (endingWith(command, ",A,?"))
 	{
 		command[strlen(command) - 4] = '\0';
-		nOfOccurancesOfAttrNameInAllSectionCSS(*headAndTail, command);
+		nOfOccurancesOfAttrNameInAllSectionCSS(*headAndTail, command); //here command is attrName
 	}
 
-	//z,S,? - print the total (for all blocks) number of occurrences of selector z. It can be 0;
 	else if (endingWith(command, ",S,?"))
 	{
 		command[strlen(command) - 4] = '\0';
 		nOfSelectorZ(*headAndTail, command);
 	}
 
-	//i, D, * -remove the entire block number i(i.e., separators + attributes), after successful execution, print "deleted";
 	else if (endingWith(command, ",D,*"))
 	{
 		int newNumber = createNumber(command);
-		printf("Remove section %d\n", newNumber);
-		removeIthSection(headAndTail, newNumber);
-		printList(headAndTail->head);
+		removeIthSection(headAndTail, newNumber, 1);
 	}
 
-	//i,A,n - print the value of the attribute with the name n for the i-th block, if there is no such attribute or block, skip;
 	else if (ifSubString(command, ",A,"))
 	{
 		int newNumber = createNumberToComa(command);
@@ -517,19 +423,13 @@ void executeCommand(struct StatusOfReading* state, struct ListOfElements* headAn
 		valOfAttrInIthSection(*headAndTail, newNumber, command);
 	}
 
-	//i, D, n - remove the attribute named n from the i - th block, if the block becomes empty
-	//as a result of the operation, it should also be removed(along with any selectors), after successful
-	//execution, print "deleted".
 	else if (ifSubString(command, ",D,"))
 	{
 		int newNumber = createNumberToComa(command);
 		createEndingName(command);
-		removeAttrNameFromIthSection(headAndTail, newNumber, command);
-		printList(headAndTail->head);
+		removeAttrNameFromIthSection(headAndTail, newNumber, command, 0);
 	}
 
-	//z,E,n - print the value of the attribute named n for the selector z, in case of multiple occurrences of selector z, take the last one.
-	//If there is no such attribute, skip;
 	else if (ifSubString(command, ",E,"))
 	{
 		char z[N];
@@ -546,7 +446,6 @@ void executeCommand(struct StatusOfReading* state, struct ListOfElements* headAn
 
 		valOfAttrNInSelectorZ(*headAndTail, command, z);
 	}
-
 
 	else if (ifSubString(command, ",S,"))
 	{
@@ -567,8 +466,6 @@ void processCommand(struct StatusOfReading* state, struct ListOfElements* headAn
 	state->charTable[state->charLenght] = '\0';
 	state->charLenght++;
 
-	printf("Procesujemy komende: %s \n", state->charTable);
-
 	if (strcmp(state->charTable, RESUME) == 0)
 	{
 		state->status = READINGSELECTORS;
@@ -576,11 +473,19 @@ void processCommand(struct StatusOfReading* state, struct ListOfElements* headAn
 
 	else
 	{
-		printf("Wykonujemy komende: %s\n", state->charTable);
 		executeCommand(state, headAndTail);
 	}
 
 	state->charLenght = 0;
+}
+
+
+void processEndOfFile(struct StatusOfReading* state, struct ListOfElements* headAndTail)
+{
+	if (state->status == READINGCOMMANDS)
+	{
+		processCommand(state, headAndTail);
+	}
 }
 
 
@@ -607,35 +512,29 @@ void recognizeChar(char readChar, struct StatusOfReading* state, struct ListOfEl
 
 	else if (readChar == ',')
 	{
-		printf("Rozpoznany COMA ,");
 		processComa(state);
 	}
 
 	else if (readChar == '{')
 	{
-		printf("Rozpoznany LBRACE {");
 		processLBrace(state);
 	}
 
 	else if (readChar == ':')
 	{
-		printf("Rozpoznany COLON :");
 		processColon(state);
 	}
 
 	else if (readChar == ';')
 	{
-		printf("Rozpoznany SEMICOLON ;");
 		processSemiColon(state);
 	}
 
 	else if (readChar == '}')
 	{
-		printf("Rozpoznany RBRACE }");
 		processRBrace(state, headAndTail);
 	}
 	
-
 	else if (readChar == ' ' || readChar == '\n' || readChar == '\t')
 	{
 		processWhiteSpace(state, readChar);
@@ -659,22 +558,17 @@ void readCSS(struct StatusOfReading* state, struct ListOfElements* headAndTail)
 	{
 		state->charCounter++;
 
-		printf("Przeczytany znak w pozycji (linia = %d, charCounter = %d): %c \n", state->lineCounter, state->charCounter, readChar);
-
 		if (readChar == '\n')
 		{
 			state->lineCounter++;
 			state->charCounter = 0;
 		}
 
-
 		recognizeChar(readChar, state, headAndTail);
 		counter = scanf("%c", &readChar);
 	}
-
-	printf("Przeczytany koniec pliku.\n");
+	processEndOfFile(state, headAndTail);
 }
-
 
 
 int main()
@@ -693,61 +587,6 @@ int main()
 	headAndTail.tail = NULL;
 
 	readCSS(&state, &headAndTail);
-
-	nOfCSSSections(headAndTail);
-	nOfSelectorInSectionIth(headAndTail, 3);
-	nOfAttrInSectionIth(headAndTail, 2);
-	jthSelectorInIthSection(headAndTail, 2, 20);
-
-	char t0[6] = { 'c', 'o', 'l', 'o', 'r', '\0'};
-	valOfAttrInIthSection(headAndTail, 2, t0);
-
-	char t1[6] = { 'w', 'i', 'd', 't', 'h', '\0'};
-	nOfOccurancesOfAttrNameInAllSectionCSS(headAndTail, t1);
-
-	char t2[3] = { 'h', '1', '\0' };
-	nOfSelectorZ(headAndTail, t1);
-	
-	valOfAttrNInSelectorZ(headAndTail, t0, t2);
-
-	removeIthSection(&headAndTail, 1);
-
-	removeAttrNameFromIthSection(&headAndTail, 2, t0);
-
-	printList(headAndTail.head);
-
-
-	/*
-	char t0[4] = { 'a', 'b', 'c', '\0' };
-	char v0[3] = { 'x', 'y', '\0' };
-
-	char s0[3] = { 'u', 'v', '\0' };
-
-
-	struct SectionCSS css0;
-	css0.headSelector = NULL;
-	css0.headAttribute = NULL;
-	addSelector(&css0, s0, 3);
-	addAttribute(&css0, t0, 4, v0, 3);
-
-
-	struct SectionCSS css1;
-	css1.headSelector = NULL;
-	css1.headAttribute = NULL;
-
-	struct SectionCSS css2;
-	css2.headSelector = NULL;
-	css2.headAttribute = NULL;
-
-	printList(headAndTail.head);
-	addToList(&headAndTail, css0);
-	printList(headAndTail.head);
-	addToList(&headAndTail, css1);
-	printList(headAndTail.head);
-	addToList(&headAndTail, css2);
-	printList(headAndTail.head);
-	*/
-
 
 	headAndTail.head = freeListMemory(headAndTail.head);
 	headAndTail.tail = NULL;

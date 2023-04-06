@@ -1,10 +1,16 @@
 #include "Structs.h"
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 
 void addSelector(struct SectionCSS* css, char* selectorName, int selectorLen)
 {
+	if (selectorLen <= 1)
+	{
+		return;
+	}
+
 	struct Selector* newSelector = (struct Selector*)malloc(sizeof(struct Selector));
 	newSelector->selectorName = (char*)malloc(selectorLen * sizeof(char));
 
@@ -32,8 +38,39 @@ void addSelector(struct SectionCSS* css, char* selectorName, int selectorLen)
 }
 
 
+void removeAttrDuplicate(struct SectionCSS* css, char* attr)
+{
+	struct Attribute* current = css->headAttribute;
+	struct Attribute* prev = NULL;
+
+	while (current != NULL && strcmp(current->attributeName, attr) != 0)
+	{
+		prev = current;
+		current = current->next;
+	}
+
+	if (current != NULL)
+	{
+		//remove current
+		if (prev != NULL)
+		{
+			prev->next = current->next;
+		}
+
+		else
+		{
+			css->headAttribute = css->headAttribute->next;
+		}
+		free(current);
+	}
+
+}
+
+
 void addAttribute(struct SectionCSS* css, char* attr, int attrLen, char* value, int valueLen)
 {
+	removeAttrDuplicate(css, attr);
+
 	struct Attribute* newAttr = (struct Attribute*)malloc(sizeof(struct Attribute));
 	newAttr->attributeName = (char*)malloc(attrLen * sizeof(char));
 	newAttr->attributeValue = (char*)malloc(valueLen * sizeof(char));
@@ -72,7 +109,6 @@ void addToList(struct ListOfElements* headAndTail, struct SectionCSS css)
 	if (headAndTail->tail == NULL || headAndTail->tail->nOfOccpied == BLOCKSIZE)
 	{
 		struct Element* newElem = (struct Element*)malloc(sizeof(struct Element));
-		printf("Zaalokowana pamiec elementu pod adresem %d \n", newElem);
 
 		newElem->nOfOccpied = 1;
 		newElem->sectionTab[0] = css;
@@ -101,78 +137,6 @@ void addToList(struct ListOfElements* headAndTail, struct SectionCSS css)
 }
 
 
-void printAttributes(struct Attribute* head)
-{
-	struct Attribute* current = head;
-
-	while (current != NULL)
-	{
-		printf("<%s:%s> -> ", current->attributeName, current->attributeValue);
-		current = current->next;
-	}
-
-	printf("NULL");
-}
-
-
-void printSelectors(struct Selector* head)
-{
-	struct Selector* current = head;
-
-	while (current != NULL)
-	{
-		printf("<%s> ->", current->selectorName);
-		current = current->next;
-	}
-
-	printf("NULL");
-}
-
-
-void printOneSection(struct SectionCSS css)
-{
-	printSelectors(css.headSelector);
-	printf(" Attrybuty: ");
-	printAttributes(css.headAttribute);
-}
-
-
-void printTabCSS(struct Element* current)
-{
-	printf(" %d: ", current->nOfOccpied);
-	for (int i = 0; i < current->nOfOccpied; i++)
-	{
-		printf("[%d]", i);
-		printOneSection(current->sectionTab[i]);
-		printf(", ");
-	}
-}
-
-
-void printList(struct Element* head)
-{
-	if (head == NULL)
-	{
-		printf("Lista css pusta \n	");
-	}
-
-	else
-	{
-		printf("Lista css:");
-		struct Element* current = head;
-
-		while (current != NULL)
-		{
-			printf("\nBlok: ");
-			printf("{%d %d}", current, current->next);
-			printTabCSS(current);
-			printf("<->");
-			current = current->next;
-		}
-		printf("NULL \n");
-
-	}
-}
 
 
 struct Element* freeListMemory(struct Element* head)
@@ -181,8 +145,6 @@ struct Element* freeListMemory(struct Element* head)
 	{
 		struct Element* elemToRemove = head;
 		head = head->next;
-
-		printf("Dealokacja elementu: [%d %d] \n", elemToRemove, elemToRemove->next);
 		free(elemToRemove);
 	}
 

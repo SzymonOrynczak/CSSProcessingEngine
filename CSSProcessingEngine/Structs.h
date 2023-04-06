@@ -1,5 +1,5 @@
 ﻿#pragma once
-#define BLOCKSIZE 2
+#define BLOCKSIZE 8
 
 struct Attribute
 {
@@ -41,7 +41,5 @@ struct ListOfElements
 
 void addSelector(struct SectionCSS* css, char* selectorName, int selectorLen);
 void addAttribute(struct SectionCSS* css, char* attr, int attrLen, char* value, int valueLen);
-void printList(struct Element* head);
 void addToList(struct ListOfElements* headAndTail, struct SectionCSS css);
-void printOneSection(struct SectionCSS css);
-struct Element* freeListMemory(struct Element* head); //zwolnij również inne listy: atrybuty, selektory, chary
+struct Element* freeListMemory(struct Element* head);
